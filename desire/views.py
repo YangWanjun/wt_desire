@@ -1,3 +1,4 @@
+import os
 import uuid
 import base64
 
@@ -30,6 +31,8 @@ class IndexView(TemplateView):
         context.update(csrf(request))
         try:
             desire = Desire.objects.get(email=email)
+            if desire.desire and os.path.exists(desire.desire.path):
+                os.remove(desire.desire.path)
             desire.desire = ContentFile(base64.b64decode(svg_data))
             desire.desire.name = str(uuid.uuid4()) + '.svg'
             desire.save()

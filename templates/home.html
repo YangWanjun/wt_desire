@@ -12,9 +12,10 @@
     <script type="text/javascript">
         let signaturePad = null;
         let dataStack = [];
+        let canvas = null;
         window.onload = function () {
-            resetCanvasWidth();
-            let canvas = document.querySelector("#signature-pad");
+            canvas = document.querySelector("#signature-pad");
+            resetCanvas(canvas);
             signaturePad = new SignaturePad(canvas);
 
             document.getElementById('clear').addEventListener('click', function () {
@@ -32,18 +33,27 @@
             document.getElementById('redo').addEventListener('click', function () {
                 var data = signaturePad.toData();
                 if (data && dataStack.length > 0) {
-                    {#dataStack.push(data.pop());#}
                     data.push(dataStack.pop());
                     signaturePad.fromData(data);
                 }
             });
         };
 
-        function resetCanvasWidth() {
-            document.getElementById('signature-pad').width = document.body.offsetWidth - 25;
+        function resetCanvas(canvas) {
+            // let ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = document.body.offsetWidth - 25;
+            canvas.height = canvas.offsetHeight;
+            // canvas.getContext("2d").scale(ratio, ratio);
         }
 
-        window.onresize = resetCanvasWidth;
+        // function resizeCanvas(canvas) {
+        //     let ratio = window.devicePixelRatio || 1;
+        //     canvas.width = canvas.offsetWidth * ratio;
+        //     canvas.height = canvas.offsetHeight * ratio;
+        //     canvas.getContext("2d").scale(ratio, ratio);
+        // }
+
+        window.onresize = resetCanvas;
 
         function checkSubmit() {
             if (signaturePad.isEmpty()) {
@@ -52,7 +62,6 @@
             }
             let data = signaturePad.toDataURL('image/svg+xml');
             $("input[name=user_signature]").val(data);
-            document.getElementById("imgSignature").src = data;
             return true;
         }
     </script>
