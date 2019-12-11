@@ -1,0 +1,28 @@
+<div class="container">
+    <div class="wrapper">
+        <ul id="sb-slider" class="sb-slider">
+            {% for desire in object_list %}
+                <li>
+                    <a href="javascript:void(0)">
+                        <img src="{{ desire.desire.url }}" width="740" height="493" alt="{{ desire.full_name }}">
+                    </a>
+                </li>
+            {% endfor %}
+            <li>
+                <a href="javascript:void(0)"><img width="740"
+                                                  src="https://tympanus.net/Development/Slicebox/images/1.jpg"
+                                                  alt="image1"/></a>
+                <div class="sb-description">
+                    <h3>Creative Lifesaver</h3>
+                </div>
+            </li>
+        </ul>
+
+        <div id="shadow" class="shadow"></div>
+
+        <div id="nav-arrows" class="nav-arrows">
+            <a href="#" id="next">Next</a>
+            <a href="#" id="prev">Previous</a>
+        </div>
+    </div>
+</div>

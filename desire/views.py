@@ -34,9 +34,19 @@ class IndexView(TemplateView):
             if desire.desire and os.path.exists(desire.desire.path):
                 os.remove(desire.desire.path)
             desire.desire = ContentFile(base64.b64decode(svg_data))
-            desire.desire.name = str(uuid.uuid4()) + '.svg'
+            desire.desire.name = str(uuid.uuid4()) + '.png'
             desire.save()
             messages.add_message(request, messages.INFO, '送信しました、ありがとうございました。')
         except ObjectDoesNotExist:
             messages.add_message(request, messages.ERROR, '送信失敗しました。該当するメールアドレスが登録されていません。')
+        return self.render_to_response(context)
+
+
+class WallView(TemplateView):
+    template_name = 'wall.html'
+
+    def get(self, request, *args, **kwargs):
+        context = {
+            'object_list': Desire.objects.all(),
+        }
         return self.render_to_response(context)

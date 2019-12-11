@@ -15,8 +15,10 @@
         let canvas = null;
         window.onload = function () {
             canvas = document.querySelector("#signature-pad");
-            resetCanvas(canvas);
-            signaturePad = new SignaturePad(canvas);
+            // resetCanvas(canvas);
+            signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgb(255, 255, 255)',
+            });
 
             document.getElementById('clear').addEventListener('click', function () {
                 signaturePad.clear();
@@ -43,7 +45,7 @@
             let ratio = Math.max(window.devicePixelRatio || 1, 1);
             canvas.width = (document.body.offsetWidth - 25);
             canvas.height = canvas.offsetHeight;
-            canvas.getContext("2d").scale(ratio, ratio);
+            // canvas.getContext("2d").scale(ratio, ratio);
         }
 
         // function resizeCanvas(canvas) {
@@ -53,14 +55,15 @@
         //     canvas.getContext("2d").scale(ratio, ratio);
         // }
 
-        window.onresize = resetCanvas;
+        // window.onresize = resetCanvas;
 
         function checkSubmit() {
             if (signaturePad.isEmpty()) {
                 alert("願望をご記入ください。");
                 return false;
             }
-            let data = signaturePad.toDataURL('image/svg+xml');
+            // let data = signaturePad.toDataURL('image/svg+xml');
+            let data = signaturePad.toDataURL();
             $("input[name=user_signature]").val(data);
             return true;
         }
@@ -69,6 +72,19 @@
         .signature-pad {
             border: 1px solid lightgray;
             border-radius: 10px;
+        }
+        ul.messages {
+            margin-left: 30px;
+            margin-right: 30px;
+            border: 1px solid;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        ul.messages li.info {
+            color: green;
+        }
+        ul.messages li.error {
+            color: red;
         }
     </style>
 </head>
@@ -98,7 +114,7 @@
             <div class="input-field col s12">
                 <div>
                     <div class="wrapper">
-                        <canvas id="signature-pad" width="800" height="800" class="signature-pad"></canvas>
+                        <canvas id="signature-pad" width="900" height="600" class="signature-pad"></canvas>
                     </div>
                     <input type="button" id="clear" value="消す"/>
                     <input type="button" id="undo" value="UNDO"/>

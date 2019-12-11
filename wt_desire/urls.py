@@ -19,10 +19,11 @@ from django.urls import path
 from django.conf.urls import url
 from django.views.static import serve
 
-from desire.views import IndexView
+from desire.views import IndexView, WallView
 
 urlpatterns = [
     path('desire/admin/', admin.site.urls),
     url(r'^desire/media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     url(r'^desire$', IndexView.as_view(), name='index'),
+    url(r'^desire/wall$', WallView.as_view(), name='wall'),
 ]
