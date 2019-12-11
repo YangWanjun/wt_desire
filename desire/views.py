@@ -5,13 +5,11 @@ import base64
 from django.contrib import messages
 from django.core.files.base import ContentFile
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.template import loader
 from django.views.generic.base import TemplateView
 from django.template.context_processors import csrf
 
 from .models import Desire
+from utils import common
 
 
 # Create your views here.
@@ -35,7 +33,15 @@ class IndexView(TemplateView):
                 os.remove(desire.desire.path)
             desire.desire = ContentFile(base64.b64decode(svg_data))
             desire.desire.name = str(uuid.uuid4()) + '.png'
-            desire.save()
+            desire.save(update_fields=('desire',))
+            # バックグラウンドを設定
+            data = common.set_background_image(desire.desire.path)
+            if data:
+                if desire.desire_bg and os.path.exists(desire.desire_bg.path):
+                    os.remove(desire.desire_bg.path)
+                desire.desire_bg = data
+                desire.desire_bg.name = str(uuid.uuid4()) + '.png'
+                desire.save(update_fields=('desire_bg',))
             messages.add_message(request, messages.INFO, '送信しました、ありがとうございました。')
         except ObjectDoesNotExist:
             messages.add_message(request, messages.ERROR, '送信失敗しました。該当するメールアドレスが登録されていません。')
@@ -47,6 +53,6 @@ class WallView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = {
-            'object_list': Desire.objects.all(),
+            'object_list': Desire.objects.filter(desire_bg__isnull=False),
         }
         return self.render_to_response(context)

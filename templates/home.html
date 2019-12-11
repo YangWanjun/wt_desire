@@ -17,7 +17,9 @@
             canvas = document.querySelector("#signature-pad");
             // resetCanvas(canvas);
             signaturePad = new SignaturePad(canvas, {
-                backgroundColor: 'rgb(255, 255, 255)',
+                // backgroundColor: 'rgb(255, 255, 255)',
+                minWidth: 4,
+                maxWidth: 5,
             });
 
             document.getElementById('clear').addEventListener('click', function () {
@@ -114,7 +116,7 @@
             <div class="input-field col s12">
                 <div>
                     <div class="wrapper">
-                        <canvas id="signature-pad" width="900" height="600" class="signature-pad"></canvas>
+                        <canvas id="signature-pad" width="1000" height="800" class="signature-pad"></canvas>
                     </div>
                     <input type="button" id="clear" value="消す"/>
                     <input type="button" id="undo" value="UNDO"/>
