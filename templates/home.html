@@ -40,10 +40,10 @@
         };
 
         function resetCanvas(canvas) {
-            // let ratio = Math.max(window.devicePixelRatio || 1, 1);
-            canvas.width = document.body.offsetWidth - 25;
+            let ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = (document.body.offsetWidth - 25);
             canvas.height = canvas.offsetHeight;
-            // canvas.getContext("2d").scale(ratio, ratio);
+            canvas.getContext("2d").scale(ratio, ratio);
         }
 
         // function resizeCanvas(canvas) {
