@@ -5,9 +5,11 @@ import base64
 from django.contrib import messages
 from django.core.files.base import ContentFile
 from django.core.exceptions import ObjectDoesNotExist
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, View
 from django.template.context_processors import csrf
 from django.shortcuts import render
+from django.http import JsonResponse, HttpResponse
+from django.core.files import File
 
 from .models import Desire
 from utils import common
@@ -56,3 +58,15 @@ class WallView(TemplateView):
             'object_list': Desire.objects.filter(desire_bg__isnull=False),
         }
         return render(request, '{}.html'.format(kwargs.get('type')), context)
+
+
+class DesireImageView(View):
+
+    def get(self, request, *args, **kwargs):
+        email = kwargs.get('email')
+        try:
+            desire = Desire.objects.get(email=email)
+            image_file = desire.desire.path
+            return HttpResponse(File(open(image_file, 'rb')), content_type="image/jpeg")
+        except ObjectDoesNotExist:
+            return JsonResponse({}, status=200)
