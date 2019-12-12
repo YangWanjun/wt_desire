@@ -36,6 +36,8 @@
                         dataType: "json",
                     }).done(function (json) {
                         M.toast({html: json.message, classes: 'green'});
+                        clearData();
+                        $('input[name=email]').val('');
                     }).fail(function (errors) {
                         M.toast({html: errors.responseJSON.message, classes: 'red'});
                     }).always(function () {
@@ -82,7 +84,6 @@
         }
 
         function clearData() {
-            $('input[name=email]').val('');
             $('input[name=user_signature]').val('');
             signaturePad.clear();
             dataStack = [];
