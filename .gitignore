@@ -106,7 +106,7 @@ ENV/
 user_subscription/
 
 media/*
-!media/template/
+!media/background/
 */migrations/*
 !__init__.py
 */master/admin_migrations/*
