@@ -22,25 +22,21 @@
                 maxWidth: 3,
             });
 
-            document.getElementById('clear').addEventListener('click', function () {
-                signaturePad.clear();
-                dataStack = [];
-            });
-
-            document.getElementById('undo').addEventListener('click', function () {
-                var data = signaturePad.toData();
-                if (data) {
-                    dataStack.push(data.pop());
-                    signaturePad.fromData(data);
+            $('#frmInputDesire').submit(function () {
+                if (checkSubmit()) {
+                    $.ajax({
+                        type: $(this).attr('method'),
+                        url: $(this).attr('action'),
+                        data: $(this).serialize(),
+                        dataType: "json",
+                    }).done(function (json) {
+                        M.toast({html: json.message, classes: 'green'});
+                    }).fail(function (errors) {
+                        M.toast({html: errors.responseJSON.message, classes: 'red'});
+                    });
                 }
-            });
-            document.getElementById('redo').addEventListener('click', function () {
-                var data = signaturePad.toData();
-                if (data && dataStack.length > 0) {
-                    data.push(dataStack.pop());
-                    signaturePad.fromData(data);
-                }
-            });
+                return false;
+            })
         };
 
         function resetCanvas(canvas) {
@@ -60,8 +56,12 @@
         // window.onresize = resetCanvas;
 
         function checkSubmit() {
+            if ($('input[name=email]').val() === '') {
+                M.toast({html: "メールアドレスを記入してください。", classes: 'red'});
+                return false;
+            }
             if (signaturePad.isEmpty()) {
-                alert("願望をご記入ください。");
+                M.toast({html: "願望をご記入ください。", classes: 'red'});
                 return false;
             }
             // let data = signaturePad.toDataURL('image/svg+xml');
@@ -69,8 +69,38 @@
             $("input[name=user_signature]").val(data);
             return true;
         }
+
+        function sendDesire() {
+            $('#frmInputDesire').submit();
+        }
+
+        function clearData() {
+            $('input[name=email]').val('');
+            $('input[name=user_signature]').val('');
+            signaturePad.clear();
+            dataStack = [];
+        }
+
+        function undo() {
+            var data = signaturePad.toData();
+            if (data) {
+                dataStack.push(data.pop());
+                signaturePad.fromData(data);
+            }
+        }
+
+        function redo() {
+            var data = signaturePad.toData();
+            if (data && dataStack.length > 0) {
+                data.push(dataStack.pop());
+                signaturePad.fromData(data);
+            }
+        }
     </script>
     <style type="text/css">
+        .brand-logo {
+            margin-left: 20px;
+        }
         .signature-pad {
             border: 1px solid lightgray;
             border-radius: 10px;
@@ -91,15 +121,36 @@
     </style>
 </head>
 <body>
-<div class="row">
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
+<div class="navbar-fixed">
+<nav>
+    <div class="nav-wrapper teal lighten-2">
+        <a href="javascript:void(0)" class="brand-logo">愿望墙</a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+            <li>
+                <a class="waves-effect waves-light white-text" onclick="clearData()">クリア
+                </a>
+            </li>
+            <li>
+                <a class="waves-effect waves-light white-text" onclick="undo()">元に戻す
+                    <i class="material-icons right">undo</i>
+                </a>
+            </li>
+            <li>
+                <a class="waves-effect waves-light white-text" onclick="redo()">やり直し
+                    <i class="material-icons right">redo</i>
+                </a>
+            </li>
+            <li>
+                <a class="waves-effect waves-light white-text" onclick="sendDesire()">送信
+                    <i class="material-icons right">send</i>
+                </a>
+            </li>
         </ul>
-    {% endif %}
-    <form class="col s12" action="/desire" method="post" onsubmit="return checkSubmit();">
+    </div>
+</nav>
+</div>
+<div class="row">
+    <form id="frmInputDesire" class="col s12" action="/desire" method="post">
         <div style="display: none">
             {% csrf_token %}
         </div>
@@ -118,18 +169,8 @@
                     <div class="wrapper">
                         <canvas id="signature-pad" width="1000" height="800" class="signature-pad"></canvas>
                     </div>
-                    <input type="button" id="clear" value="消す"/>
-                    <input type="button" id="undo" value="UNDO"/>
-                    <input type="button" id="redo" value="REDO"/>
                     <input type="hidden" name="user_signature"/>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="input-field col s12">
-                <button class="btn waves-effect waves-light" type="submit" name="action">Submit
-                    <i class="material-icons right">send</i>
-                </button>
             </div>
         </div>
     </form>

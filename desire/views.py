@@ -45,10 +45,11 @@ class IndexView(TemplateView):
                 desire.desire_bg = data
                 desire.desire_bg.name = str(uuid.uuid4()) + '.png'
                 desire.save(update_fields=('desire_bg',))
-            messages.add_message(request, messages.INFO, '送信しました、ありがとうございました。')
+            return JsonResponse({'message': '送信しました、ありがとうございました。'}, status=200)
         except ObjectDoesNotExist:
-            messages.add_message(request, messages.ERROR, '送信失敗しました。該当するメールアドレスが登録されていません。')
-        return self.render_to_response(context)
+            return JsonResponse({'message': '送信失敗しました。該当するメールアドレスが登録されていません。'}, status=400)
+        except Exception as ex:
+            return JsonResponse({'message': str(ex)}, status=400)
 
 
 class WallView(TemplateView):
