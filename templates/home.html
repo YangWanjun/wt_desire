@@ -5,11 +5,14 @@
     <title>Title</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="/desire/static/css/base.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@2.3.2/dist/signature_pad.min.js" type="text/javascript"></script>
     <script src="https://code.jquery.com/jquery-2.2.4.min.js" type="text/javascript"></script>
+    <script src="/desire/static/js/utils.js" type="text/javascript"></script>
 
     <script type="text/javascript">
+        const utils = new Utils();
         let signaturePad = null;
         let dataStack = [];
         let canvas = null;
@@ -24,6 +27,7 @@
 
             $('#frmInputDesire').submit(function () {
                 if (checkSubmit()) {
+                    utils.loading();
                     $.ajax({
                         type: $(this).attr('method'),
                         url: $(this).attr('action'),
@@ -33,6 +37,8 @@
                         M.toast({html: json.message, classes: 'green'});
                     }).fail(function (errors) {
                         M.toast({html: errors.responseJSON.message, classes: 'red'});
+                    }).always(function () {
+                        utils.loaded();
                     });
                 }
                 return false;
