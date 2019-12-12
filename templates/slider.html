@@ -78,7 +78,6 @@
     let __timerAutoSlider = null;
     $("#play").click(function () {
         if (__isPlaying === false) {
-            $("div.slider-container").show();
             M.toast({html: '自動再生しました。'});
             __timerAutoSlider = setInterval(function () {
                 $("#next").click();
@@ -92,7 +91,6 @@
             $("#play").addClass('green');
             $("#play").html('<i class="material-icons">play_arrow</i>');
             M.toast({html: '一時停止しました。'});
-            $("div.slider-container").hide();
         }
         __isPlaying = !__isPlaying;
     });
