@@ -1,8 +1,8 @@
 import os
 import uuid
 import base64
+import random
 
-from django.contrib import messages
 from django.core.files.base import ContentFile
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic.base import TemplateView, View
@@ -10,6 +10,8 @@ from django.template.context_processors import csrf
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.core.files import File
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 from .models import Desire
 from utils import common
@@ -68,6 +70,24 @@ class DesireImageView(View):
         try:
             desire = Desire.objects.get(email=email)
             image_file = desire.desire.path
-            return HttpResponse(File(open(image_file, 'rb')), content_type="image/jpeg")
+            return HttpResponse(File(open(image_file, 'rb')), content_type="image/png")
         except ObjectDoesNotExist:
             return JsonResponse({}, status=200)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RandomImageView(View):
+
+    def get(self, request, *args, **kwargs):
+        object_list = list(Desire.objects.filter(showed=False, desire__isnull=False))
+        try:
+            desire = random.choice(object_list)
+            desire.showed = True
+            desire.save(update_fields=('showed',))
+            return JsonResponse({'url': desire.desire.url})
+        except IndexError:
+            return JsonResponse({'url': ''})
+
+    def post(self, *args, **kwargs):
+        Desire.objects.all().update(showed=False)
+        return JsonResponse({})

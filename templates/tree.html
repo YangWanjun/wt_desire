@@ -1,164 +1,302 @@
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <script src="https://code.jquery.com/jquery-1.11.3.js"></script>
-    <script>
-        var timer;
-        var orgWidth;
-        var apples = [
-            {
-                x: 600,
-                y: 300,
-                size: 0.9,
-                color: 'red',
-                key: 'gao.lei@wisdom-technology.co.jp'
-            },
-{#            {% for desire in object_list %}#}
-{#                {#}
-{#                    x: 600,#}
-{#                    y: 300,#}
-{#                    size: 0.9,#}
-{#                    color: 'red',#}
-{#                    url: '{{ desire.desire.url }}',#}
-{#                },#}
-{#            {% endfor %}#}
-        ];
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>愿望树</title>
+<script src="/desire/static/js/tree/jquery-1.11.3.js"></script>
+<script src="/desire/static/js/tree/Box2dWeb-2.1.a.3.min.js"></script>
+<script src="/desire/static/js/tree/drop.js"></script>
+<script src="/desire/static/js/utils.js" type="text/javascript"></script>
+<link rel="stylesheet" href="/desire/static/css/tree.css">
+<script>
+	var timer;
+	var orgWidth;
+	var offsetx = 0;
+	var offsety = 0;
+	const utils = new Utils();
+	
+	//以下苹果的坐标是分辨率1920X1080全屏时相对于背景图片左上角的像素数，分辨率不一致时通过factor来自动调节
+	var factor = 1.0;
+	var apples = [
+		{ 
+			x: 700,
+			y: 150,
+			size: 0.9,
+			color: 'red',
+			key: 'random'
+		},
+		{ 
+			x: 900,
+			y: 200,
+			size: 0.7,
+			color: 'red',
+			key: 'random'
+		},
+		{ 
+			x: 700,
+			y: 350,
+			size: 0.9,
+			color: 'green',
+			key: 'random'
+		},
+		{ 
+			x: 1000,
+			y: 430,
+			size: 1.0,
+			color: 'red',
+			key: 'random'
+		},
+		{ 
+			x: 1200,
+			y: 200,
+			size: 0.8,
+			color: 'green',
+			key: 'random'
+		}
+	];
+	
+	function initApple(id) {
+		var appleImg = $('#' + id);
+		var idx = parseInt(id.substring(6));
+		appleImg.css('position', 'absolute');
+		appleImg.width(appleImg.width() * factor * apples[idx].size);
+		appleImg.css('left', apples[idx].x * factor - appleImg.width() / 2 + offsetx);
+		appleImg.css('top', apples[idx].y * factor - appleImg.height() / 2 + offsety);
 
-        function initApple(id) {
-            var appleImg = $('#' + id);
-            var idx = parseInt(id.substring(6));
-            appleImg.css('position', 'absolute');
-            appleImg.width(appleImg.width() * apples[idx].size);
-            appleImg.css('left', apples[idx].x - appleImg.width() / 2);
-            appleImg.css('top', apples[idx].y - appleImg.height() / 2);
+		var map = document.createElement('MAP');
+		map.name = 'map_' + idx;
 
-            var map = document.createElement("MAP");
-            map.name = 'map_' + idx;
+		var area = document.createElement('AREA');
 
-            var area = document.createElement("AREA");
+		//得到苹果的素材后，用多边形来描绘点击区域。当前采用简单的圆形	
+		area.shape = 'circle';
+		area.coords = appleImg.width() / 2 + ',' + appleImg.height() / 2 + ',' + Math.min(appleImg.width() / 2, appleImg.height() / 2);
+		
+		area.href = 'javascript:pickApple(' + idx + ');';
+		area.setAttribute('onmouseover', 'overApple(' + idx + ')');
+		area.setAttribute('onmouseout', 'leaveApple(' + idx + ')');
+		
+		$('#draw').append(map);
+		$('map[name="map_' + idx + '"]').append(area);
+		appleImg.attr('usemap', '#map_' + idx);
+	}
+	
+	function pickApple(idx) {
+		leaveApple(idx);
+		showDesire(idx);
+	}
+	
+	function showDesire(idx) {
+	
+		var overlay = $('#overlay');
+		overlay.width(document.documentElement.clientWidth);
+		overlay.height(document.documentElement.clientHeight);
+		$('#close').css('display','block');
+		
+		var container = $('#container');
+		
+		//alert('愿望取得主键：' + apples[idx].key);
+		
+		var url = getImageUrl();
+		//Ajax从服务器上取得愿望图片URL
+		//url = 'desire_gaolei.png';
+		
+		var cut = new Image();
+		cut.id = 'cut';
+		if (apples[idx].color === 'red') {
+			cut.src = '/desire/static/img/tree/red_desire.png';
+		} else {
+			cut.src = '/desire/static/img/tree/green_desire.png';
+		}
+		
+		container.append(cut);
+		cut.onload = function() {
+			var cutImg = $('#cut');
+			if (cutImg.width() / cutImg.height() > document.documentElement.clientWidth / document.documentElement.clientHeight) {
+				cutImg.width(document.documentElement.clientWidth);
+			} else {
+				cutImg.height(document.documentElement.clientHeight);
+			}
+			container.css('left', (document.documentElement.clientWidth - container.width()) / 2);
+			container.css('top', (document.documentElement.clientHeight - container.height()) / 2);
+		
+			if (url === '') {
+				var end = document.createElement('DIV');
+				end.id = 'end';
+				end.innerText = '许愿结束啦！祝所有人愿望成真！';
+				end.setAttribute('style', 'color:green;font-weight:bolder;font-size:' + (factor > 0.7 ? 'xx-large' : 'large') + ';position:absolute;top:0');
+				container.append(end);
+				$('#end').css('left', (container.width() - $('#end').width()) / 2);
+				$('#end').css('top', (container.height() - $('#end').height()) / 2);
+				
+				$('#close').css('display','none');
+				$('#candiv').width(document.documentElement.clientWidth);
+				$('#candiv').height(document.documentElement.clientHeight);
+				drop();
+				
+				return;
+			}
+			
+			var desire = new Image();
+			desire.id = 'desire';
+			desire.src = url;
+			container.append(desire);
+			desire.onload = function() {
+				var desireImg = $('#desire');
+				desireImg.css('position', 'absolute');
+				if (desireImg.width() / desireImg.height() > document.documentElement.clientWidth / document.documentElement.clientHeight) {
+					desireImg.width(container.width() * 0.3);
+				} else {
+					desireImg.height(container.height() * 0.3);
+				}
+				desireImg.css('left', (container.width() - desireImg.width()) / 2);
+				desireImg.css('top', (container.height() - desireImg.height()) / 2);
+			}
+		}
+	}
+	
+	function closeDesire() {
+		$('#close').css('display','none');
+		$('#container').empty();
+		var overlay = $('#overlay');
+		overlay.width(0);
+		overlay.height(0);
+	}
+	 
+	function overApple(idx) {
+		var appleImg = $('#apple_' + idx);
+        oriWidth = appleImg.width();
+        var scaleWidth = oriWidth * 1.1;
+        timer = setInterval(function(){
+        	if (appleImg.width() === oriWidth) {
+        		appleImg.width(scaleWidth);
+        	} else {
+        		appleImg.width(oriWidth);
+        	}
+        	appleImg.css('left', apples[idx].x * factor - appleImg.width() / 2 + offsetx);
+			appleImg.css('top', apples[idx].y * factor - appleImg.height() / 2 + offsety);
+    	},150);
+	}
+	
+	function leaveApple(idx) {
+		clearInterval(timer);
+		var appleImg = $('#apple_' + idx);
+		appleImg.width(oriWidth);
+		appleImg.css('left', apples[idx].x * factor - appleImg.width() / 2 + offsetx);
+		appleImg.css('top', apples[idx].y * factor - appleImg.height() / 2 + offsety);
+	}
+	
+	$(function(){
+		//play();
+	});
+	
+	function launchFullscreen(element) {
+		if(element.requestFullscreen) {
+			element.requestFullscreen();
+		} else if(element.mozRequestFullScreen) {
+			element.mozRequestFullScreen();
+		} else if(element.msRequestFullscreen){
+			element.msRequestFullscreen();
+		} else if(element.webkitRequestFullscreen) {
+			element.webkitRequestFullScreen();
+		}
+	}
 
-            //得到苹果的素材后，用多边形来描绘点击区域。当前采用简单的圆形
-            area.shape = 'circle';
-            area.coords = appleImg.width() / 2 + ',' + appleImg.height() / 2 + ',' + Math.min(appleImg.width() / 2, appleImg.height() / 2);
-
-            area.href = 'javascript:pickApple(' + idx + ');';
-            area.setAttribute('onmouseover', 'overApple(' + idx + ')');
-            area.setAttribute('onmouseout', 'leaveApple(' + idx + ')');
-
-            $('#draw').append(map);
-            $('map[name="map_' + idx + '"]').append(area);
-            appleImg.attr('usemap', '#map_' + idx);
-        }
-
-        function pickApple(idx) {
-            $('map[name="map_' + idx + '"]').remove();
-            leaveApple(idx);
-            var appleImg = $('#apple_' + idx);
-            appleImg.css('top', $('#tree').height() - appleImg.height());
-
-            appleImg.fadeOut(1000, function () {
-                appleImg.remove();
-                showDesire(apples[idx].url);
-            });
-        }
-
-        function showDesire(img_url) {
-            //alert('愿望取得主键：' + key);
-            //Ajax从服务器上取得愿望图片
-            var img = new Image();
-            img.src = '/desire/static/img/desire_gaolei.png';
-            img.setAttribute('stype', 'opacity: 1.0');
-
-            var overlay = $('#overlay');
-            overlay.width(document.documentElement.clientWidth);
-            overlay.height(document.documentElement.clientHeight);
-            $('#close').css('display', 'block');
-
-            var container = $('#container');
-            container.append(img);
-
-            img.onload = function () {
-                if (this.width > document.documentElement.clientWidth * 0.9) {
-                    this.width = document.documentElement.clientWidth * 0.9;
-                }
-                if (this.height > document.documentElement.clientHeight * 0.9) {
-                    this.height = document.documentElement.clientHeight * 0.9;
-                }
-                container.css("left", (document.documentElement.clientWidth - container.width()) / 2);
-                container.css("top", (document.documentElement.clientHeight - container.height()) / 2);
-            }
-        }
-
-        function closeDesire() {
-            $('#close').css('display', 'none');
-            $('#container').empty();
-            var overlay = $('#overlay');
-            overlay.width(0);
-            overlay.height(0);
-        }
-
-        function overApple(idx) {
-            var appleImg = $('#apple_' + idx);
-            oriWidth = appleImg.width();
-            var scaleWidth = oriWidth * 1.1;
-            timer = setInterval(function () {
-                if (appleImg.width() === oriWidth) {
-                    appleImg.width(scaleWidth);
-                } else {
-                    appleImg.width(oriWidth);
-                }
-                appleImg.css('left', apples[idx].x - appleImg.width() / 2);
-                appleImg.css('top', apples[idx].y - appleImg.height() / 2);
-            }, 150);
-        }
-
-        function leaveApple(idx) {
-            clearInterval(timer);
-            var appleImg = $('#apple_' + idx);
-            appleImg.width(oriWidth);
-            appleImg.css('left', apples[idx].x - appleImg.width() / 2);
-            appleImg.css('top', apples[idx].y - appleImg.height() / 2);
-        }
-
-        $(function () {
-            var drawArea = $('#draw');
-            var tree = new Image();
-            tree.id = 'tree';
-            tree.src = '/desire/static/img/tree.png';
-            drawArea.append(tree);
-            tree.onload = function () {
-                $('#tree').css('position', 'absolute');
-                $('#tree').css('z-index', -1);
-                this.width = document.documentElement.clientWidth;
-                if (this.height < document.documentElement.clientHeight) {
-                    this.height = document.documentElement.clientHeight;
-                }
-            };
-
-            for (i = 0; i < apples.length; i++) {
-                var img = new Image();
-                img.id = 'apple_' + i.toString();
-                if (apples[i].color === 'red') {
-                    img.src = '/desire/static/img/red.png';
-                } else {
-                    img.src = '/desire/static/img/green.png';
-                }
-                drawArea.append(img);
-                img.onload = function () {
-                    initApple(this.id);
-                }
-            }
+	// すべて画像を未出力の状態に戻る
+	function resetImageStatus() {
+        $.ajax({
+            type: 'POST',
+            url: '/desire/images/random',
+            data: {},
+            dataType: "json",
+            async: true,  // 非同期
+        }).done(function () {
+        }).fail(function () {
+        }).always(function () {
         });
-    </script>
-</head>
-<body style="padding:0;margin:0">
-<div id="draw">
+    }
 
+    // サーバーから画像のURLを取得する。
+    function getImageUrl() {
+	    let url = '';
+        $.ajax({
+            type: 'GET',
+            url: '/desire/images/random',
+            data: {},
+            dataType: "json",
+            async: false,  // 同期
+        }).done(function (json) {
+            url = json.url;
+        }).fail(function () {
+        }).always(function () {
+        });
+        return url
+    }
+	
+	function play() {
+	    // すべて画像を未出力の状態に戻る
+	    resetImageStatus();
+		$('#play').css('display','none');
+		launchFullscreen(document.getElementById('page'));
+		$('#audio').trigger('play');
+		
+		var drawArea = $('#draw');
+		var tree = new Image();
+		tree.id = 'tree';
+		tree.src = '/desire/static/img/tree/tree.png';
+		drawArea.append(tree);
+		tree.onload = function() {
+			var treeImg = $('#tree');
+			treeImg.css('position', 'absolute');
+			treeImg.css('z-index', -10);
+			if (treeImg.width() / treeImg.height() > document.documentElement.clientWidth / document.documentElement.clientHeight) {
+				treeImg.width(document.documentElement.clientWidth);
+				offsety = (document.documentElement.clientHeight - treeImg.height()) / 2;
+				treeImg.css('top', offsety);
+			} else {
+				treeImg.height(document.documentElement.clientHeight);
+				offsetx = (document.documentElement.clientWidth - treeImg.width()) / 2;
+				treeImg.css('left', offsetx);
+			}
+			factor = treeImg.width() / 1920;
+			
+			for (i = 0; i < apples.length; i++) {
+				var img = new Image();
+				img.id = 'apple_' + i.toString();
+				if (apples[i].color === 'red') {
+					img.src = '/desire/static/img/tree/red.png';
+				} else {
+					img.src = '/desire/static/img/tree/green.png';
+				}			
+				drawArea.append(img);
+				img.onload = function() { initApple(this.id); }
+			}
+		}		
+	}
+</script>
+</head>
+<body style="background-color:black;padding:0px;margin:0px" id="page">
+<audio id="audio" loop="loop">
+  <source src="/desire/static/audio/tree/music.mp3" type="audio/mpeg">
+</audio>
+<div id="draw">
+	
 </div>
-<div id="overlay" style="position:absolute;background-color:black;opacity:0.8;z-index:10000">
-    <span id="close" style="color:red;display:none;" onclick="closeDesire()">✖</span>
+<div id="overlay" style="position:absolute;background-color:black;opacity:0.8;z-index:101">
+	<a id="play" style="color:white;display:block;" onclick="play()">开始</a>
+	<a id="close" style="color:white;display:none;" onclick="closeDesire()">关闭</a>
 </div>
-<div id="container" style="position:absolute;z-index:10001;">
+<div id="container" style="position:absolute;z-index:1001;">
+</div>
+<div id="candiv" style="position:absolute;z-index:10001;">
+	<div id="contents">
+                <ul class="tag-cloud">
+                    <li class="tag-cloud__tag-item tag-cloud__tag-item_id-1"><p>新</p></li>
+                    <li class="tag-cloud__tag-item tag-cloud__tag-item_id-2"><p>年</p></li>
+                    <li class="tag-cloud__tag-item tag-cloud__tag-item_id-3"><p>快</p></li>
+                    <li class="tag-cloud__tag-item tag-cloud__tag-item_id-4"><p>乐</p></li>
+                    <li class="tag-cloud__tag-item tag-cloud__tag-item_id-5"><p>!</p></li>
+                </ul>
+            <!-- /#contents --></div>
 </div>
 </body>
 </html>

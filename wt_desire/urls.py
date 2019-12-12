@@ -19,7 +19,7 @@ from django.urls import path
 from django.conf.urls import url
 from django.views.static import serve
 
-from desire.views import IndexView, WallView, DesireImageView
+from desire.views import IndexView, WallView, DesireImageView, RandomImageView
 
 urlpatterns = [
     path('desire/admin/', admin.site.urls),
@@ -29,4 +29,5 @@ urlpatterns = [
     url(r'^desire/tree', WallView.as_view(), {'type': 'tree'}, name='tree'),
     url(r'^desire/bubble', WallView.as_view(), {'type': 'bubble'}, name='bubble'),
     url(r'^desire/email/(?P<email>[^/]+)$', DesireImageView.as_view(),),
+    url(r'^desire/images/random$', RandomImageView.as_view(),),
 ]
