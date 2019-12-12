@@ -14,8 +14,8 @@ def get_background_folder():
     return path
 
 
-def get_background_image():
-    root_path = get_background_folder()
+def get_background_random_image():
+    root_path = os.path.join(get_background_folder(), 'random')
     name_list = [n for n in os.listdir(root_path) if os.path.splitext(n)[1].upper() in ('.JPG', 'JPEG', '.PNG')]
     if name_list:
         return os.path.join(root_path, random.choice(name_list))
@@ -27,7 +27,7 @@ def set_background_image(src):
     if not os.path.exists(src):
         return None
     img_src = Image.open(src).convert("RGBA")
-    path_bg = get_background_image()
+    path_bg = get_background_random_image()
     if not path_bg or not os.path.exists(path_bg):
         return None
     img_bg = Image.open(path_bg)

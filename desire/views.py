@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic.base import TemplateView
 from django.template.context_processors import csrf
+from django.shortcuts import render
 
 from .models import Desire
 from utils import common
@@ -49,10 +50,9 @@ class IndexView(TemplateView):
 
 
 class WallView(TemplateView):
-    template_name = 'wall.html'
 
     def get(self, request, *args, **kwargs):
         context = {
             'object_list': Desire.objects.filter(desire_bg__isnull=False),
         }
-        return self.render_to_response(context)
+        return render(request, '{}.html'.format(kwargs.get('type')), context)

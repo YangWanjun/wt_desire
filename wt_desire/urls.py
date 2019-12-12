@@ -25,5 +25,6 @@ urlpatterns = [
     path('desire/admin/', admin.site.urls),
     url(r'^desire/media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     url(r'^desire$', IndexView.as_view(), name='index'),
-    url(r'^desire/wall$', WallView.as_view(), name='wall'),
+    url(r'^desire/slider$', WallView.as_view(), {'type': 'slider'}, name='slider'),
+    url(r'^desire/tree', WallView.as_view(), {'type': 'tree'}, name='tree'),
 ]

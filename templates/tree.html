@@ -1,0 +1,164 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <script src="https://code.jquery.com/jquery-1.11.3.js"></script>
+    <script>
+        var timer;
+        var orgWidth;
+        var apples = [
+            {
+                x: 600,
+                y: 300,
+                size: 0.9,
+                color: 'red',
+                key: 'gao.lei@wisdom-technology.co.jp'
+            },
+{#            {% for desire in object_list %}#}
+{#                {#}
+{#                    x: 600,#}
+{#                    y: 300,#}
+{#                    size: 0.9,#}
+{#                    color: 'red',#}
+{#                    url: '{{ desire.desire.url }}',#}
+{#                },#}
+{#            {% endfor %}#}
+        ];
+
+        function initApple(id) {
+            var appleImg = $('#' + id);
+            var idx = parseInt(id.substring(6));
+            appleImg.css('position', 'absolute');
+            appleImg.width(appleImg.width() * apples[idx].size);
+            appleImg.css('left', apples[idx].x - appleImg.width() / 2);
+            appleImg.css('top', apples[idx].y - appleImg.height() / 2);
+
+            var map = document.createElement("MAP");
+            map.name = 'map_' + idx;
+
+            var area = document.createElement("AREA");
+
+            //得到苹果的素材后，用多边形来描绘点击区域。当前采用简单的圆形
+            area.shape = 'circle';
+            area.coords = appleImg.width() / 2 + ',' + appleImg.height() / 2 + ',' + Math.min(appleImg.width() / 2, appleImg.height() / 2);
+
+            area.href = 'javascript:pickApple(' + idx + ');';
+            area.setAttribute('onmouseover', 'overApple(' + idx + ')');
+            area.setAttribute('onmouseout', 'leaveApple(' + idx + ')');
+
+            $('#draw').append(map);
+            $('map[name="map_' + idx + '"]').append(area);
+            appleImg.attr('usemap', '#map_' + idx);
+        }
+
+        function pickApple(idx) {
+            $('map[name="map_' + idx + '"]').remove();
+            leaveApple(idx);
+            var appleImg = $('#apple_' + idx);
+            appleImg.css('top', $('#tree').height() - appleImg.height());
+
+            appleImg.fadeOut(1000, function () {
+                appleImg.remove();
+                showDesire(apples[idx].url);
+            });
+        }
+
+        function showDesire(img_url) {
+            //alert('愿望取得主键：' + key);
+            //Ajax从服务器上取得愿望图片
+            var img = new Image();
+            img.src = '/desire/static/img/desire_gaolei.png';
+            img.setAttribute('stype', 'opacity: 1.0');
+
+            var overlay = $('#overlay');
+            overlay.width(document.documentElement.clientWidth);
+            overlay.height(document.documentElement.clientHeight);
+            $('#close').css('display', 'block');
+
+            var container = $('#container');
+            container.append(img);
+
+            img.onload = function () {
+                if (this.width > document.documentElement.clientWidth * 0.9) {
+                    this.width = document.documentElement.clientWidth * 0.9;
+                }
+                if (this.height > document.documentElement.clientHeight * 0.9) {
+                    this.height = document.documentElement.clientHeight * 0.9;
+                }
+                container.css("left", (document.documentElement.clientWidth - container.width()) / 2);
+                container.css("top", (document.documentElement.clientHeight - container.height()) / 2);
+            }
+        }
+
+        function closeDesire() {
+            $('#close').css('display', 'none');
+            $('#container').empty();
+            var overlay = $('#overlay');
+            overlay.width(0);
+            overlay.height(0);
+        }
+
+        function overApple(idx) {
+            var appleImg = $('#apple_' + idx);
+            oriWidth = appleImg.width();
+            var scaleWidth = oriWidth * 1.1;
+            timer = setInterval(function () {
+                if (appleImg.width() === oriWidth) {
+                    appleImg.width(scaleWidth);
+                } else {
+                    appleImg.width(oriWidth);
+                }
+                appleImg.css('left', apples[idx].x - appleImg.width() / 2);
+                appleImg.css('top', apples[idx].y - appleImg.height() / 2);
+            }, 150);
+        }
+
+        function leaveApple(idx) {
+            clearInterval(timer);
+            var appleImg = $('#apple_' + idx);
+            appleImg.width(oriWidth);
+            appleImg.css('left', apples[idx].x - appleImg.width() / 2);
+            appleImg.css('top', apples[idx].y - appleImg.height() / 2);
+        }
+
+        $(function () {
+            var drawArea = $('#draw');
+            var tree = new Image();
+            tree.id = 'tree';
+            tree.src = '/desire/static/img/tree.png';
+            drawArea.append(tree);
+            tree.onload = function () {
+                $('#tree').css('position', 'absolute');
+                $('#tree').css('z-index', -1);
+                this.width = document.documentElement.clientWidth;
+                if (this.height < document.documentElement.clientHeight) {
+                    this.height = document.documentElement.clientHeight;
+                }
+            };
+
+            for (i = 0; i < apples.length; i++) {
+                var img = new Image();
+                img.id = 'apple_' + i.toString();
+                if (apples[i].color === 'red') {
+                    img.src = '/desire/static/img/red.png';
+                } else {
+                    img.src = '/desire/static/img/green.png';
+                }
+                drawArea.append(img);
+                img.onload = function () {
+                    initApple(this.id);
+                }
+            }
+        });
+    </script>
+</head>
+<body style="padding:0;margin:0">
+<div id="draw">
+
+</div>
+<div id="overlay" style="position:absolute;background-color:black;opacity:0.8;z-index:10000">
+    <span id="close" style="color:red;display:none;" onclick="closeDesire()">✖</span>
+</div>
+<div id="container" style="position:absolute;z-index:10001;">
+</div>
+</body>
+</html>
