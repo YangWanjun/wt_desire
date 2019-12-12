@@ -27,5 +27,6 @@ urlpatterns = [
     url(r'^desire$', IndexView.as_view(), name='index'),
     url(r'^desire/slider$', WallView.as_view(), {'type': 'slider'}, name='slider'),
     url(r'^desire/tree', WallView.as_view(), {'type': 'tree'}, name='tree'),
+    url(r'^desire/bubble', WallView.as_view(), {'type': 'bubble'}, name='bubble'),
     url(r'^desire/email/(?P<email>[^/]+)$', DesireImageView.as_view(),),
 ]
