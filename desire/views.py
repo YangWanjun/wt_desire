@@ -84,7 +84,7 @@ class RandomImageView(View):
             desire = random.choice(object_list)
             desire.showed = True
             desire.save(update_fields=('showed',))
-            return JsonResponse({'url': desire.desire.url})
+            return JsonResponse({'url': desire.desire.url, 'name': desire.full_name})
         except IndexError:
             return JsonResponse({'url': ''})
 

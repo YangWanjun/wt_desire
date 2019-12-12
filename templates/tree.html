@@ -95,8 +95,10 @@
 		var container = $('#container');
 		
 		//alert('愿望取得主键：' + apples[idx].key);
-		
-		var url = getImageUrl();
+
+        const data = getImageUrl();
+		var url = data.url;
+		var name = data.name;
 		//Ajax从服务器上取得愿望图片URL
 		//url = 'desire_gaolei.png';
 		
@@ -150,6 +152,14 @@
 				}
 				desireImg.css('left', (container.width() - desireImg.width()) / 2);
 				desireImg.css('top', (container.height() - desireImg.height()) / 2);
+
+				var end = document.createElement('DIV');
+				end.id = 'end';
+				end.innerText = name;
+				end.setAttribute('style', 'color:green;font-weight:bolder;font-size:' + (factor > 0.7 ? 'xx-large' : 'large') + ';position:absolute;top:0');
+				container.append(end);
+				$('#end').css('left', (container.width() - $('#end').width())  *3 / 4);
+				$('#end').css('top', (container.height() - $('#end').height()) * 4 / 5);
 			}
 		}
 	}
@@ -217,7 +227,7 @@
 
     // サーバーから画像のURLを取得する。
     function getImageUrl() {
-	    let url = '';
+	    let data = '';
         $.ajax({
             type: 'GET',
             url: '/desire/images/random',
@@ -225,11 +235,11 @@
             dataType: "json",
             async: false,  // 同期
         }).done(function (json) {
-            url = json.url;
+            data = json;
         }).fail(function () {
         }).always(function () {
         });
-        return url
+        return data
     }
 	
 	function play() {
