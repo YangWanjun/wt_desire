@@ -79,9 +79,18 @@ class DesireImageView(View):
 class RandomImageView(View):
 
     def get(self, request, *args, **kwargs):
-        object_list = list(Desire.objects.filter(showed=False, desire__isnull=False))
+        is_random = False
+        object_list = list(Desire.objects.filter(
+            showed=False, desire__isnull=False, priority__isnull=False
+        ).order_by('priority'))
+        if len(object_list) == 0:
+            object_list = list(Desire.objects.filter(showed=False, desire__isnull=False))
+            is_random = True
         try:
-            desire = random.choice(object_list)
+            if is_random:
+                desire = random.choice(object_list)
+            else:
+                desire = object_list[0]
             desire.showed = True
             desire.save(update_fields=('showed',))
             return JsonResponse({'url': desire.desire.url, 'name': desire.full_name})

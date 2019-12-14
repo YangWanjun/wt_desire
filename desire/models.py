@@ -8,6 +8,7 @@ class Desire(models.Model):
     avatar = models.ImageField(blank=True, null=True, upload_to='avatar/', verbose_name="写真")
     desire = models.ImageField(blank=True, null=True, upload_to='desire/', verbose_name="願望")
     desire_bg = models.ImageField(blank=True, null=True, upload_to='desire_bg/', verbose_name="願望")
+    priority = models.IntegerField(blank=True, null=True)
     showed = models.BooleanField(default=False)
 
     class Meta:
