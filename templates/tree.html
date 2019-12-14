@@ -146,12 +146,12 @@
 				var desireImg = $('#desire');
 				desireImg.css('position', 'absolute');
 				if (desireImg.width() / desireImg.height() > document.documentElement.clientWidth / document.documentElement.clientHeight) {
-					desireImg.width(container.width() * 0.3);
+					desireImg.width(container.width() * 0.6);
 				} else {
-					desireImg.height(container.height() * 0.3);
+					desireImg.height(container.height() * 0.6);
 				}
 				desireImg.css('left', (container.width() - desireImg.width()) / 2);
-				desireImg.css('top', (container.height() - desireImg.height()) / 2);
+				desireImg.css('top', (container.height() - desireImg.height()) * 3 / 4);
 
 				var end = document.createElement('DIV');
 				end.id = 'end';
